@@ -814,6 +814,23 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Collection\Abstrac
         return $this;
     }
 
+    public function addWebsitesFilter(array $websitesFilter)
+    {
+        if (empty($websitesFilter)) {
+            return;
+        }
+
+        $websiteSelect = $this->getConnection()->select()->from(
+            ['web' => $this->getTable('catalog_product_website')],
+            'web.product_id'
+        );
+        foreach ($websitesFilter as $conditionType => $value) {
+            $websiteSelect->orWhere($this->_getConditionSql('web.website_id', [$conditionType => $value]));
+        }
+        $inCondition = ['in' => $websiteSelect];
+        $this->getSelect()->where($this->_getConditionSql('e.entity_id', $inCondition));
+    }
+
     /**
      * Get filters applied to collection
      *
