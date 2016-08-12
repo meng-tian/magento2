@@ -174,6 +174,15 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
         $this->collection->addCategoriesFilter([$conditionType => $values]);
     }
 
+    public function testAddWebsitesFilter()
+    {
+        $this->selectMock->method('from')->willReturnSelf();
+        $this->selectMock->expects(self::exactly(2))->method('orWhere')->willReturnSelf();
+        $this->selectMock->expects(self::exactly(1))->method('where')->willReturnSelf();
+
+        $this->collection->addWebsitesFilter(['in' => '1,2,3', 'neq' => '4']);
+    }
+
     /**
      * @param $map
      */

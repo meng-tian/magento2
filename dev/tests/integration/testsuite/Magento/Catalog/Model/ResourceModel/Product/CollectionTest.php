@@ -100,4 +100,21 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(2, $items);
         $this->assertEquals(15, $product->getPrice());
     }
+
+    public function testAddWebsitesFilter()
+    {
+        $this->collection->addWebsitesFilter(['in' => '1', 'eq' => '2']);
+        $whereParts = $this->collection->getSelect()->getPart(\Magento\Framework\DB\Select::WHERE);
+        self::assertCount(1, $whereParts);
+        $websiteSelect = '/e.entity_id IN\s*\(+SELECT\s+`web`\.`product_id`\s+FROM\s+`catalog_product_website`\s+AS\s+`web`\s+WHERE/';
+        self::assertRegExp($websiteSelect, $whereParts[0]);
+        self::assertRegExp('/web\.website_id\s+IN\s?\(\'1\'\)+\s+OR\s+\(web\.website_id\s+=\s+\'2\'\)+/', $whereParts[0]);
+
+        $this->collection->addWebsitesFilter(['nin' => '3,4']);
+        $whereParts = $this->collection->getSelect()->getPart(\Magento\Framework\DB\Select::WHERE);
+        self::assertCount(2, $whereParts);
+        $andWhere = '/AND\s+\(+' . substr($websiteSelect, 1);
+        self::assertRegExp($andWhere, $whereParts[1]);
+        self::assertRegExp('/web\.website_id\s+NOT\sIN\s*\(\'3\',\s*\'4\'\)+/', $whereParts[1]);
+    }
 }
